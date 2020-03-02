@@ -11,6 +11,7 @@ dock () { eval $(docker-machine env $1) }
 alias undock="docker-machine env -u"
 alias beep="afplay /System/Library/Sounds/Hero.aiff"
 alias ls="ls -G"
+alias ctags="`brew --prefix`/bin/ctags --languages=python --python-kinds=-iv"
 
 fpath=($fpath "/Users/jack/.zfunctions")
 
@@ -18,3 +19,7 @@ fpath=($fpath "/Users/jack/.zfunctions")
 . ~/.spaceship.sh
 autoload -U promptinit; promptinit
 prompt spaceship
+
+# Vim Mode :-)
+bindkey -v
+
