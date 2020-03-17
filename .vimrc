@@ -4,21 +4,31 @@ set nocompatible
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " Installed plugins
 " https://github.com/junegunn/vim-plug - Plugin manager
-" https://github.com/tpope/vim-commentary - Comment out code easily
-" https://github.com/nvie/vim-flake8 - Flake8 linting
-
 call plug#begin('~/.vim/plugged')
-Plug 'janko/vim-test' " - Easily run tests from Vim
+Plug 'janko/vim-test' " Easily run tests from Vim
+Plug 'preservim/nerdtree' " Better file navigation
+Plug 'Xuyuanp/nerdtree-git-plugin' " Git flags for nerdtree
+Plug 'tpope/vim-commentary' " Easy comments in Vim
+Plug 'nvie/vim-flake8' " Flake8 linting
+Plug 'vim-scripts/indentpython.vim' " Better python indentation
+Plug 'ycm-core/YouCompleteMe' " Better autocomplete
+Plug 'vim-syntastic/syntastic' " Better syntax highlighting
 call plug#end()
 
+" Disable preview in autocompletions
+set completeopt-=preview
+
 " Enable default VIM plugins
-filetype plugin on
+" filetype plugin on
 filetype indent on
 
 " Map flake8 plugin to t8
 autocmd FileType python map <buffer> t8 :call flake8#Flake8()<CR>
+" Close preview window after completion is made
+let g:ycm_autoclose_preview_window_after_completion = 1
 
 " Map vim-test plugin to t
 nmap <silent> tn :TestNearest<CR>
@@ -32,12 +42,28 @@ let test#python#runner = 'djangotest'
 let test#python#djangotest#executable = 'docker-compose run web python manage.py test'
 
 " Configure the NetRW file browser plugin
-let g:netrw_banner=0        " disable annoying banner
+" let g:netrw_banner=0        " disable annoying banner
 " let g:netrw_browse_split=4  " open in prior window
 " let g:netrw_altv=1          " open splits to the right
-let g:netrw_liststyle=3     " tree view
+" let g:netrw_liststyle=3     " tree view
 " let g:netrw_list_hide=netrw_gitignore#Hide()
 " let g:netrw_list_hide.=',\(^\|\s\s\)\zs\.\S\+'
+
+" Open NERDtree with C-n
+map <C-n> :NERDTreeToggle<CR>
+
+" Close NERDtree after opening a file
+let NERDTreeQuitOnOpen=1
+
+" Open NERDtree if no file is specified
+autocmd StdinReadPre * let s:std_in=1
+autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
+
+" Don't show helptext in NERDtree menu
+let NERDTreeMinimalUI=1
+
+" Show line numbers in NERDtree menu
+let NERDTreeShowLineNumbers=1
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -48,6 +74,11 @@ set history=500
 
 " Set to auto read when a file is changed from the outside
 set autoread
+
+" Remember last position in a file
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
+endif
 
 " With a map leader it's possible to do extra key combinations
 " like <leader>w saves the current file
@@ -82,6 +113,14 @@ else
     set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store
 endif
 
+" Ignore asset files
+set wildignore+=*.bmp,*.gif,*.ico,*.jpg,*.png,*.ico
+set wildignore+=*.pdf,*.psd
+
+" Ignore libraries and environments
+set wildignore+=*/env/*,*/venv/*
+set wildignore+=*/node_modules/*,*/bower_components/*
+
 "Always show current position
 set ruler
 
@@ -89,14 +128,19 @@ set ruler
 set laststatus=2
 
 " Format the status line
-set statusline=\ %{HasPaste()}%F%m%r%h\ %w\ \ CWD:\ %r%{getcwd()}%h\ \ \ Line:\ %l\ \ Column:\ %c
+set statusline=Line:\ %l\ \ Column:\ %c%=\ %{HasPaste()}%F%m%r%h\ %w
 
 " Let me use backspace in insert mode
 set backspace=indent,eol,start
+
+" Go to next or previous line when reaching the end of a line
 set whichwrap+=<,>,h,l
 
 " Highlight search matches
 set hls
+
+" Remap esc-esc to clear highlighted searches
+nnoremap <esc><esc> :silent! nohls<cr>
 
 " Ignore case when searching
 set ignorecase
@@ -130,23 +174,28 @@ autocmd BufWritePre * :%s/\s\+$//e
 " Search recursively in directory
 set path+=**
 
-" Search ctags for tag definitions
-command! MakeTags !ctags -R .
+" Remap go to definition
+map <C-]>  :YcmCompleter GoToDefinitionElseDeclaration<CR>
 
-" Scroll through autocomplete tags with j and k
-inoremap <expr> j ((pumvisible())?("\<C-n>"):("j"))
-inoremap <expr> k ((pumvisible())?("\<C-p>"):("k"))
+" Make navigating splits easier
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Colors and Fonts
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Turn on all python highlighting
+let python_highlight_all=1
+
 " Enable syntax highlighting
 syntax enable
 colorscheme pablo
 
 " Make status bar dark
-hi StatusLine ctermbg=Black ctermfg=DarkGray
+hi StatusLine ctermbg=Black ctermfg=Red
 
 " Make list characters darker
 hi SpecialKey ctermfg=DarkGray
@@ -181,6 +230,22 @@ set tabstop=4
 set ai "Auto indent
 set si "Smart indent
 set wrap "Wrap lines
+
+" PEP 8 options
+au BufNewFile,BufRead *.py
+    \ set tabstop=4
+    \ softtabstop=4
+    \ shiftwidth=4
+    \ textwidth=79
+    \ expandtab
+    \ autoindent
+    \ fileformat=unix
+
+" Web file options
+au BufNewFile,BufRead *.js, *.html, *.css, *.scss, *.pug, *.sass
+    \ set tabstop=2
+    \ softtabstop=2
+    \ shiftwidth=2
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""

@@ -5,10 +5,12 @@ export PATH=$HOME/.bin:$HOME/.brew/bin:$HOME/.brew/sbin:$PATH
 export HOMEBREW_NO_ANALYTICS=1
 
 # Aliases
+alias la="ls -lGa"
 alias whatsmyip="wget -qO- http://ipecho.net/plain ; echo"
 alias activate="source ./env/bin/activate"
 dock () { eval $(docker-machine env $1) }
 alias undock="docker-machine env -u"
+alias dc="docker-compose"
 alias beep="afplay /System/Library/Sounds/Hero.aiff"
 alias ls="ls -G"
 alias ctags="`brew --prefix`/bin/ctags --languages=python --python-kinds=-iv"
