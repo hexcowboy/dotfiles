@@ -16,19 +16,19 @@ Plug 'nvie/vim-flake8' " Flake8 linting
 Plug 'vim-scripts/indentpython.vim' " Better python indentation
 Plug 'ycm-core/YouCompleteMe' " Better autocomplete
 Plug 'vim-syntastic/syntastic' " Better syntax highlighting
+Plug 'mattn/emmet-vim' " Emmet html expansions
+Plug 'cespare/vim-toml' " TOML syntax
 call plug#end()
-
-" Disable preview in autocompletions
-set completeopt-=preview
 
 " Enable default VIM plugins
 " filetype plugin on
-filetype indent on
+" filetype indent on
 
-" Map flake8 plugin to t8
-autocmd FileType python map <buffer> t8 :call flake8#Flake8()<CR>
 " Close preview window after completion is made
 let g:ycm_autoclose_preview_window_after_completion = 1
+
+" Disable preview in autocompletions
+set completeopt-=preview
 
 " Map vim-test plugin to t
 nmap <silent> tn :TestNearest<CR>
@@ -37,23 +37,17 @@ nmap <silent> ts :TestSuite<CR>
 nmap <silent> tl :TestLast<CR>
 nmap <silent> tg :TestVisit<CR>
 
+" Map flake8 plugin to t8
+autocmd FileType python map <buffer> t8 :call flake8#Flake8()<CR>
+
 " Configure the vim-test strategy
 let test#python#runner = 'djangotest'
-let test#python#djangotest#executable = 'docker-compose run web python manage.py test'
 
-" Configure the NetRW file browser plugin
-" let g:netrw_banner=0        " disable annoying banner
-" let g:netrw_browse_split=4  " open in prior window
-" let g:netrw_altv=1          " open splits to the right
-" let g:netrw_liststyle=3     " tree view
-" let g:netrw_list_hide=netrw_gitignore#Hide()
-" let g:netrw_list_hide.=',\(^\|\s\s\)\zs\.\S\+'
+" Change the command that's run for testing
+let test#python#djangotest#executable = 'docker-compose run --rm api python manage.py test'
 
 " Open NERDtree with C-n
 map <C-n> :NERDTreeToggle<CR>
-
-" Close NERDtree after opening a file
-let NERDTreeQuitOnOpen=1
 
 " Open NERDtree if no file is specified
 autocmd StdinReadPre * let s:std_in=1
@@ -183,6 +177,19 @@ nnoremap <C-K> <C-W><C-K>
 nnoremap <C-L> <C-W><C-L>
 nnoremap <C-H> <C-W><C-H>
 
+" Make current pane more obvious by highlighting the line
+augroup BgHighlight
+    autocmd!
+    autocmd WinEnter * set cul
+    autocmd WinLeave * set nocul
+augroup END
+
+" Highlight the 80 column
+set colorcolumn=80
+
+" We don't need the vertical split line
+set fillchars+=vert:\ "
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Colors and Fonts
@@ -195,10 +202,17 @@ syntax enable
 colorscheme pablo
 
 " Make status bar dark
-hi StatusLine ctermbg=Black ctermfg=Red
+hi StatusLine ctermbg=LightGray ctermfg=Black
+
+" Make the non-current status bar unshown
+hi StatusLineNC ctermbg=DarkGray ctermfg=Black
 
 " Make list characters darker
 hi SpecialKey ctermfg=DarkGray
+
+" 80 character column should be gray
+highlight ColorColumn ctermbg=8 guibg=DarkGray
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Files, backups and undo
@@ -213,6 +227,7 @@ set encoding=utf8
 
 " Use Unix as the standard file type
 set ffs=unix,dos,mac
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Text, tab and indent related
@@ -242,10 +257,13 @@ au BufNewFile,BufRead *.py
     \ fileformat=unix
 
 " Web file options
-au BufNewFile,BufRead *.js, *.html, *.css, *.scss, *.pug, *.sass
-    \ set tabstop=2
+au BufNewFile,BufRead *.js,*.html,*.css,*.scss,*.pug,*.sass
+    \ setlocal tabstop=2
     \ softtabstop=2
     \ shiftwidth=2
+
+" Disable continuation of comment on next line
+au FileType * set fo-=c fo-=r fo-=o
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
