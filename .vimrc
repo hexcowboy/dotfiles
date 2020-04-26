@@ -8,27 +8,46 @@ set nocompatible
 " Installed plugins
 " https://github.com/junegunn/vim-plug - Plugin manager
 call plug#begin('~/.vim/plugged')
-Plug 'janko/vim-test' " Easily run tests from Vim
-Plug 'preservim/nerdtree' " Better file navigation
-Plug 'Xuyuanp/nerdtree-git-plugin' " Git flags for nerdtree
-Plug 'tpope/vim-commentary' " Easy comments in Vim
-Plug 'nvie/vim-flake8' " Flake8 linting
-Plug 'vim-scripts/indentpython.vim' " Better python indentation
-Plug 'ycm-core/YouCompleteMe' " Better autocomplete
-Plug 'vim-syntastic/syntastic' " Better syntax highlighting
-Plug 'mattn/emmet-vim' " Emmet html expansions
-Plug 'cespare/vim-toml' " TOML syntax
+Plug 'janko/vim-test'                   " Easily run tests from Vim
+Plug 'preservim/nerdtree'               " Better file navigation
+Plug 'Xuyuanp/nerdtree-git-plugin'      " Git flags for nerdtree
+Plug 'tpope/vim-commentary'             " Easy comments in Vim
+Plug 'nvie/vim-flake8'                  " Flake8 linting
+Plug 'vim-scripts/indentpython.vim'     " Better python indentation
+Plug 'ycm-core/YouCompleteMe'           " Better autocomplete
+Plug 'vim-syntastic/syntastic'          " Better syntax highlighting
+Plug 'mattn/emmet-vim'                  " Emmet html expansions
+Plug 'cespare/vim-toml'                 " TOML syntax
+Plug 'itchyny/lightline.vim'            " Status bar
+Plug 'jeffkreeftmeijer/vim-dim'         " 4-bit color scheme
+Plug 'chrisbra/Colorizer'               " Colorize HEX codes
 call plug#end()
 
 " Enable default VIM plugins
-" filetype plugin on
-" filetype indent on
+filetype plugin on
+filetype indent on
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => YouCompleteMe
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Close preview window after completion is made
 let g:ycm_autoclose_preview_window_after_completion = 1
 
 " Disable preview in autocompletions
 set completeopt-=preview
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => vim-test
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" Configure the vim-test strategy
+let test#python#runner = 'djangotest'
+
+" Change the command that's run for testing
+let test#python#djangotest#executable = 'docker-compose run --rm api python manage.py test'
 
 " Map vim-test plugin to t
 nmap <silent> tn :TestNearest<CR>
@@ -37,32 +56,25 @@ nmap <silent> ts :TestSuite<CR>
 nmap <silent> tl :TestLast<CR>
 nmap <silent> tg :TestVisit<CR>
 
-" Map flake8 plugin to t8
-autocmd FileType python map <buffer> t8 :call flake8#Flake8()<CR>
 
-" Configure the vim-test strategy
-let test#python#runner = 'djangotest'
-
-" Change the command that's run for testing
-let test#python#djangotest#executable = 'docker-compose run --rm api python manage.py test'
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => NERDtree
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Open NERDtree with C-n
 map <C-n> :NERDTreeToggle<CR>
 
-" Open NERDtree if no file is specified
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
-
 " Don't show helptext in NERDtree menu
 let NERDTreeMinimalUI=1
 
-" Show line numbers in NERDtree menu
-let NERDTreeShowLineNumbers=1
+" Resize NERDtree window
+let NERDTreeWinSize = 25
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => General
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " Sets how many lines of history VIM has to remember
 set history=500
 
@@ -89,12 +101,13 @@ command W w !sudo tee % > /dev/null
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => VIM user interface
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " Set 7 lines to the cursor - when moving vertically using j/k
 set so=7
 
 " Show whitespace
 set listchars=tab:--,space:·
-set list
+" set list
 
 " Allow wildcards in command line
 set wildmenu
@@ -157,6 +170,7 @@ set showmatch
 set mat=2
 
 " No annoying sound on errors
+set belloff=all
 set noerrorbells
 set novisualbell
 set t_vb=
@@ -180,32 +194,33 @@ nnoremap <C-H> <C-W><C-H>
 " Make current pane more obvious by highlighting the line
 augroup BgHighlight
     autocmd!
-    autocmd WinEnter * set cul
-    autocmd WinLeave * set nocul
+    autocmd WinEnter * set notermguicolors
+    autocmd WinLeave * set termguicolors
 augroup END
-
-" Highlight the 80 column
-set colorcolumn=80
 
 " We don't need the vertical split line
 set fillchars+=vert:\ "
+
+" Make JS pretty
+autocmd FileType javascript setlocal equalprg=js-beautify\ --stdin
+
+" Toggle paste mode
+set pastetoggle=<leader>p
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Colors and Fonts
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " Turn on all python highlighting
 let python_highlight_all=1
 
 " Enable syntax highlighting
 syntax enable
-colorscheme pablo
 
-" Make status bar dark
-hi StatusLine ctermbg=LightGray ctermfg=Black
-
-" Make the non-current status bar unshown
-hi StatusLineNC ctermbg=DarkGray ctermfg=Black
+" Dim is a 4-bit color scheme that uses default Terminal colors
+colorscheme dim
+set background=dark
 
 " Make list characters darker
 hi SpecialKey ctermfg=DarkGray
@@ -213,10 +228,19 @@ hi SpecialKey ctermfg=DarkGray
 " 80 character column should be gray
 highlight ColorColumn ctermbg=8 guibg=DarkGray
 
+" Highlight the 80 column
+set colorcolumn=80
+
+" Status bar color scheme
+let g:lightline = {
+      \ 'colorscheme': 'one',
+      \ }
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Files, backups and undo
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " Turn backup off, since most stuff is in SVN, git et.c anyway...
 set nobackup
 set nowb
@@ -232,6 +256,7 @@ set ffs=unix,dos,mac
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Text, tab and indent related
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " Use spaces instead of tabs
 set expandtab
 
@@ -277,6 +302,7 @@ nnoremap ,html :-1read $HOME/.vim/.skeleton.html<CR>4jwf>a
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Helper functions
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " Returns true if paste mode is enabled
 function! HasPaste()
     if &paste
