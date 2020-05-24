@@ -63,7 +63,7 @@ tmux_conf_theme_focused_pane_bg='brightblue'            # light blue
 tmux_conf_theme_pane_border_style=thin
 
 # pane borders colours:
-tmux_conf_theme_pane_border='brightblack'               # gray
+tmux_conf_theme_pane_border='black'               # gray
 tmux_conf_theme_pane_active_border='brightblue'         # light blue
 
 # pane indicator colours
@@ -87,7 +87,7 @@ tmux_conf_theme_mode_attr='bold'
 
 # status line style
 tmux_conf_theme_status_fg='white'                       # light gray
-tmux_conf_theme_status_bg='brightblack'                 # dark gray
+tmux_conf_theme_status_bg='black'                       # dark gray
 tmux_conf_theme_status_attr='none'
 
 # terminal title
@@ -109,7 +109,7 @@ tmux_conf_theme_terminal_title='#h ❐ #S ● #I #W'
 #     - #{username}
 #     - #{username_ssh}
 tmux_conf_theme_window_status_fg='white'              # light gray
-tmux_conf_theme_window_status_bg='brightblack'              # dark gray
+tmux_conf_theme_window_status_bg='black'              # dark gray
 tmux_conf_theme_window_status_attr='none'
 tmux_conf_theme_window_status_format='#I #W'
 #tmux_conf_theme_window_status_format='#{circled_window_index} #W'
@@ -191,7 +191,7 @@ tmux_conf_theme_status_left_attr='bold,none,none'
 
 # status right style
 tmux_conf_theme_status_right_fg='white,black,black'
-tmux_conf_theme_status_right_bg='brightblack,red,white'
+tmux_conf_theme_status_right_bg='black,red,white'
 tmux_conf_theme_status_right_attr='none,none,bold'
 
 # pairing indicator
@@ -296,3 +296,9 @@ tmux_conf_copy_to_os_clipboard=false
 
 # move status line to top
 set -g status-position top
+
+# use vim keys
+set-window-option -g mode-keys vi
+
+# enable mouse
+set -g mouse on

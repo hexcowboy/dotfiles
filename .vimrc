@@ -8,24 +8,30 @@ set nocompatible
 " Installed plugins
 " https://github.com/junegunn/vim-plug - Plugin manager
 call plug#begin('~/.vim/plugged')
-Plug 'janko/vim-test'                   " Easily run tests from Vim
-Plug 'preservim/nerdtree'               " Better file navigation
-Plug 'Xuyuanp/nerdtree-git-plugin'      " Git flags for nerdtree
-Plug 'tpope/vim-commentary'             " Easy comments in Vim
-Plug 'nvie/vim-flake8'                  " Flake8 linting
-Plug 'vim-scripts/indentpython.vim'     " Better python indentation
-Plug 'ycm-core/YouCompleteMe'           " Better autocomplete
-Plug 'vim-syntastic/syntastic'          " Better syntax highlighting
-Plug 'mattn/emmet-vim'                  " Emmet html expansions
+Plug 'janko/vim-test'                   " Run tests in Vim
+Plug 'preservim/nerdtree'               " File navigation
+" Plug 'Xuyuanp/nerdtree-git-plugin'      " Git for nerdtree
+Plug 'tpope/vim-commentary'             " Easy comments
+Plug 'ycm-core/YouCompleteMe'           " Autocompletion
+Plug 'dense-analysis/ale'               " Syntax checker
+Plug 'mattn/emmet-vim'                  " HTML snippets
 Plug 'cespare/vim-toml'                 " TOML syntax
 Plug 'itchyny/lightline.vim'            " Status bar
 Plug 'jeffkreeftmeijer/vim-dim'         " 4-bit color scheme
 Plug 'chrisbra/Colorizer'               " Colorize HEX codes
+Plug 'terryma/vim-smooth-scroll'        " Smooth scrolling
+Plug 'SirVer/ultisnips'                 " Snippets engine
+Plug 'honza/vim-snippets'               " Actual snippets
+Plug 'junegunn/goyo.vim'                " Zen mode
 call plug#end()
 
 " Enable default VIM plugins
 filetype plugin on
 filetype indent on
+
+" With a map leader it's possible to do extra key combinations
+" like <leader>w saves the current file
+let mapleader = ","
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -38,16 +44,22 @@ let g:ycm_autoclose_preview_window_after_completion = 1
 " Disable preview in autocompletions
 set completeopt-=preview
 
+" Remap go to definition
+map <C-g>  :YcmCompleter GoToDefinitionElseDeclaration<CR>
+
+" Disable on HTML files
+let g:ycm_filetype_blacklist = { 'html': 1 }
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => vim-test
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Configure the vim-test strategy
-let test#python#runner = 'djangotest'
+let test#python#runner = 'pytest'
 
 " Change the command that's run for testing
-let test#python#djangotest#executable = 'docker-compose run --rm api python manage.py test'
+" let test#python#djangotest#executable = 'python manage.py test'
 
 " Map vim-test plugin to t
 nmap <silent> tn :TestNearest<CR>
@@ -61,14 +73,42 @@ nmap <silent> tg :TestVisit<CR>
 " => NERDtree
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" Open NERDtree with C-n
-map <C-n> :NERDTreeToggle<CR>
+" Open NERDtree with ,n
+map <leader>n :NERDTreeToggle<CR>
 
 " Don't show helptext in NERDtree menu
 let NERDTreeMinimalUI=1
 
 " Resize NERDtree window
 let NERDTreeWinSize = 25
+
+" Show hidden files in NERDtree
+let NERDTreeShowHidden=1
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => ALE
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" Code formatters
+let g:ale_fixers = {
+\   '*': ['remove_trailing_lines', 'trim_whitespace'],
+\   'python': ['isort', 'black'],
+\   'rust': ['rustfmt'],
+\}
+
+" Format code on save
+let g:ale_fix_on_save = 1
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => SmoothScroll
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+noremap <silent> <c-u> :call smooth_scroll#up(&scroll, 7, 2)<CR>
+noremap <silent> <c-d> :call smooth_scroll#down(&scroll, 7, 2)<CR>
+noremap <silent> <c-b> :call smooth_scroll#up(&scroll*2, 7, 4)<CR>
+noremap <silent> <c-f> :call smooth_scroll#down(&scroll*2, 7, 4)<CR>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -83,19 +123,17 @@ set autoread
 
 " Remember last position in a file
 if has("autocmd")
-  au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal! g`\"" | endif
+    au BufReadPost * if line("'\"") > 0 && line("'\"")
+        \ <= line("$") | exe "normal! g`\"" | endif
 endif
 
-" With a map leader it's possible to do extra key combinations
-" like <leader>w saves the current file
-let mapleader = ","
 
-" Fast saving
-nmap <leader>w :w!<cr>
+" Toggle paste mode
+set pastetoggle=<leader>p
 
-" :W sudo saves the file
-" (useful for handling the permission-denied error)
-command W w !sudo tee % > /dev/null
+" Easily edit and reload vimrc
+nnoremap <leader>ev :edit $MYVIMRC<CR>
+nnoremap <leader>sv :source $MYVIMRC<CR>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -103,9 +141,9 @@ command W w !sudo tee % > /dev/null
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Set 7 lines to the cursor - when moving vertically using j/k
-set so=7
+set so=6
 
-" Show whitespace
+" Show whitespace characters when enabled
 set listchars=tab:--,space:·
 " set list
 
@@ -114,11 +152,9 @@ set wildmenu
 
 " Ignore compiled files
 set wildignore=*.o,*~,*.pyc
-if has("win16") || has("win32")
-    set wildignore+=.git\*,.hg\*,.svn\*
-else
-    set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store
-endif
+
+" Ignore version control files
+set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store
 
 " Ignore asset files
 set wildignore+=*.bmp,*.gif,*.ico,*.jpg,*.png,*.ico
@@ -127,15 +163,6 @@ set wildignore+=*.pdf,*.psd
 " Ignore libraries and environments
 set wildignore+=*/env/*,*/venv/*
 set wildignore+=*/node_modules/*,*/bower_components/*
-
-"Always show current position
-set ruler
-
-" Always show the status line
-set laststatus=2
-
-" Format the status line
-set statusline=Line:\ %l\ \ Column:\ %c%=\ %{HasPaste()}%F%m%r%h\ %w
 
 " Let me use backspace in insert mode
 set backspace=indent,eol,start
@@ -147,7 +174,7 @@ set whichwrap+=<,>,h,l
 set hls
 
 " Remap esc-esc to clear highlighted searches
-nnoremap <esc><esc> :silent! nohls<cr>
+nnoremap <silent> <esc><esc> :nohls<cr>
 
 " Ignore case when searching
 set ignorecase
@@ -158,7 +185,7 @@ set smartcase
 " Makes search act like search in modern browsers
 set incsearch
 
-" Don't redraw while executing macros (good performance config)
+" Don't redraw while executing macros (better performance)
 set lazyredraw
 
 " For regular expressions turn magic on
@@ -166,7 +193,8 @@ set magic
 
 " Show matching brackets when text indicator is over them
 set showmatch
-" How many tenths of a second to blink when matching brackets
+
+" How many tenths of a second to blink on matching brackets
 set mat=2
 
 " No annoying sound on errors
@@ -181,9 +209,6 @@ autocmd BufWritePre * :%s/\s\+$//e
 
 " Search recursively in directory
 set path+=**
-
-" Remap go to definition
-map <C-]>  :YcmCompleter GoToDefinitionElseDeclaration<CR>
 
 " Make navigating splits easier
 nnoremap <C-J> <C-W><C-J>
@@ -201,11 +226,14 @@ augroup END
 " We don't need the vertical split line
 set fillchars+=vert:\ "
 
-" Make JS pretty
-autocmd FileType javascript setlocal equalprg=js-beautify\ --stdin
+" Show line number only on current line
+set number
 
-" Toggle paste mode
-set pastetoggle=<leader>p
+" Use relative numbers on sidebar
+set relativenumber
+
+" Toggle zen mode
+nnoremap <leader>z :Goyo<cr>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -232,21 +260,19 @@ highlight ColorColumn ctermbg=8 guibg=DarkGray
 set colorcolumn=80
 
 " Status bar color scheme
-let g:lightline = {
-      \ 'colorscheme': 'one',
-      \ }
+let g:lightline = { 'colorscheme': 'one', }
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Files, backups and undo
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" Turn backup off, since most stuff is in SVN, git et.c anyway...
+" Turn backup off and favor version control
 set nobackup
 set nowb
 set noswapfile
 
-" Set utf8 as standard encoding and en_US as the standard language
+" Set UTF8 as standard encoding
 set encoding=utf8
 
 " Use Unix as the standard file type
@@ -260,16 +286,16 @@ set ffs=unix,dos,mac
 " Use spaces instead of tabs
 set expandtab
 
-" Be smart when using tabs ;)
+" Be smart when using tabs
 set smarttab
 
-" 1 tab == 4 spaces
+" 1 tab = 4 spaces
 set shiftwidth=4
 set tabstop=4
 
-set ai "Auto indent
-set si "Smart indent
-set wrap "Wrap lines
+set ai          "Auto indent
+set si          "Smart indent
+set wrap        "Wrap lines
 
 " PEP 8 options
 au BufNewFile,BufRead *.py
@@ -290,13 +316,46 @@ au BufNewFile,BufRead *.js,*.html,*.css,*.scss,*.pug,*.sass
 " Disable continuation of comment on next line
 au FileType * set fo-=c fo-=r fo-=o
 
+" Automatically enter Paste mode when pasting text
+" https://rb.gy/pdvxlc
+inoremap <special> <expr> <Esc>[200~ XTermPasteBegin()
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => General
+" => Terminal mode
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" Automaticall enter Insert mode in a new terminal
+if has('nvim')
+    autocmd TermOpen term://* startinsert
+endif
+
+" Disable line numbers in Terminal
+autocmd TermOpen * setlocal nonumber norelativenumber
+
+" Open a terminal anywhere with ,t
+map <leader>t :terminal<cr>
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Snippets
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " HTML Snippet
 nnoremap ,html :-1read $HOME/.vim/.skeleton.html<CR>4jwf>a
+
+" Django Snippets
+nnoremap ,% :-1read $HOME/.vim/.skeleton.django.tag<CR>j2hi
+nnoremap ,{ :-1read $HOME/.vim/.skeleton.django.var<CR>j2hi
+nnoremap ,block :-1read $HOME/.vim/.skeleton.django.block<CR>j15hi
+nnoremap ,if :-1read $HOME/.vim/.skeleton.django.if<CR>j14hi
+nnoremap ,csrf :-1read $HOME/.vim/.skeleton.django.csrf<CR>j
+
+" UltiSnips shortcuts
+let g:UltiSnipsExpandTrigger="<c-o>"
+let g:UltiSnipsJumpForwardTrigger="<c-p>"
+let g:UltiSnipsJumpBackwardTrigger="<c-i>"
+let g:UltiSnipsListSnippets = "<c-k>"
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -311,3 +370,22 @@ function! HasPaste()
     return ''
 endfunction
 
+" Automatically enters Paste mode when pasting text
+function! XTermPasteBegin()
+    let &t_SI .= WrapForTmux("\<Esc>[?2004h")
+    let &t_EI .= WrapForTmux("\<Esc>[?2004l")
+    set pastetoggle=<Esc>[201~
+    set paste
+    return ""
+endfunction
+
+" If using Paste in tmux, double escape the codes
+function! WrapForTmux(s)
+    if !exists('$TMUX')
+        return a:s
+    endif
+    let tmux_start = "\<Esc>Ptmux;"
+    let tmux_end = "\<Esc>\\"
+    return tmux_start .
+        \ substitute(a:s, "\<Esc>", "\<Esc>\<Esc>", 'g') . tmux_end
+endfunction

@@ -1,6 +1,9 @@
 # Add homebrew to path
 export PATH=$HOME/.bin:$HOME/.brew/bin:$HOME/.brew/sbin:$PATH
 
+# Add Rust to path
+export PATH="$HOME/.cargo/bin:$PATH"
+
 # Opt out of Homebrew analytics
 export HOMEBREW_NO_ANALYTICS=1
 
@@ -19,6 +22,9 @@ alias gitme="git config user.name 'jackno' && git config user.email 'jacknovotny
 # Vim Mode :-)
 bindkey -v
 
+# I don't know how to type nvim
+alias vim="nvim"
+
 # Ask to correct invalid commands as well as command arguments
 setopt correct
 setopt correctall
@@ -31,8 +37,9 @@ fpath=($fpath "/Users/jack/.zfunctions")
 # Set homebrew prefix since brew is too lazy to do it automatically
 export HOMEBREW_PREFIX=$(brew --prefix)
 
-# Load zsh-autocorrect plugin
+# Load zsh-autosuggestions plugin
 source $HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+bindkey '^ ' autosuggest-accept
 
 # Load zsh-syntax-highlighting plugin
 source $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -41,3 +48,8 @@ source $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zs
 . ~/.spaceship.sh
 autoload -U promptinit; promptinit
 prompt spaceship
+
+# Use nvim
+export EDITOR=(which nvim)
+
+# [[ -z "$TMUX" ]] && exec tmux new-session -A -s main
