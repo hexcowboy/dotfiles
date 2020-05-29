@@ -11,6 +11,9 @@ call plug#begin('~/.vim/plugged')
 Plug 'janko/vim-test'                   " Run tests in Vim
 Plug 'preservim/nerdtree'               " File navigation
 " Plug 'Xuyuanp/nerdtree-git-plugin'      " Git for nerdtree
+Plug 'junegunn/fzf',                    " Fuzzyfinder
+\   { 'do': { -> fzf#install() } }      " Fuzzyfinder
+Plug 'junegunn/fzf.vim'                 " Fuzzyfinder
 Plug 'tpope/vim-commentary'             " Easy comments
 Plug 'ycm-core/YouCompleteMe'           " Autocompletion
 Plug 'dense-analysis/ale'               " Syntax checker
@@ -19,7 +22,6 @@ Plug 'cespare/vim-toml'                 " TOML syntax
 Plug 'itchyny/lightline.vim'            " Status bar
 Plug 'jeffkreeftmeijer/vim-dim'         " 4-bit color scheme
 Plug 'chrisbra/Colorizer'               " Colorize HEX codes
-Plug 'terryma/vim-smooth-scroll'        " Smooth scrolling
 Plug 'SirVer/ultisnips'                 " Snippets engine
 Plug 'honza/vim-snippets'               " Actual snippets
 Plug 'junegunn/goyo.vim'                " Zen mode
@@ -80,7 +82,7 @@ map <leader>n :NERDTreeToggle<CR>
 let NERDTreeMinimalUI=1
 
 " Resize NERDtree window
-let NERDTreeWinSize = 25
+let NERDTreeWinSize = 22
 
 " Show hidden files in NERDtree
 let NERDTreeShowHidden=1
@@ -93,22 +95,12 @@ let NERDTreeShowHidden=1
 " Code formatters
 let g:ale_fixers = {
 \   '*': ['remove_trailing_lines', 'trim_whitespace'],
-\   'python': ['isort', 'black'],
+\   'python': ['isort', 'black', 'yapf'],
 \   'rust': ['rustfmt'],
 \}
 
 " Format code on save
 let g:ale_fix_on_save = 1
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => SmoothScroll
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-noremap <silent> <c-u> :call smooth_scroll#up(&scroll, 7, 2)<CR>
-noremap <silent> <c-d> :call smooth_scroll#down(&scroll, 7, 2)<CR>
-noremap <silent> <c-b> :call smooth_scroll#up(&scroll*2, 7, 4)<CR>
-noremap <silent> <c-f> :call smooth_scroll#down(&scroll*2, 7, 4)<CR>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -295,7 +287,6 @@ set tabstop=4
 
 set ai          "Auto indent
 set si          "Smart indent
-set wrap        "Wrap lines
 
 " PEP 8 options
 au BufNewFile,BufRead *.py
